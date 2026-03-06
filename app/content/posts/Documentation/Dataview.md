@@ -1,15 +1,14 @@
 # Dataview
 
-The project supports lightweight Dataview-style blocks at render time.
+Use Dataview-style blocks to generate list/table views from published pages.
 
-## Supported blocks
+## Mental model
 
-- `LIST`
-- `TABLE`
+A `dataview` block is evaluated during rendering and replaced with normal markdown output.
 
-## Live example: LIST query
+## Do this
 
-Query:
+LIST input example:
 
 ````markdown
 ```dataview
@@ -18,16 +17,14 @@ FROM "Documentation"
 ```
 ````
 
-Rendered output:
+LIST rendered output:
 
 ```dataview
 LIST
 FROM "Documentation"
 ```
 
-## Live example: TABLE query with WHERE
-
-Query:
+TABLE input example:
 
 ````markdown
 ```dataview
@@ -38,7 +35,7 @@ SORT title
 ```
 ````
 
-Rendered output:
+TABLE rendered output:
 
 ```dataview
 TABLE file.folder, summary
@@ -47,14 +44,16 @@ WHERE contains(file.name, "Wiki")
 SORT title
 ```
 
-## Current query support
+## Verify
 
+- LIST query returns pages in the target folder.
+- TABLE query returns expected rows/columns.
+- `npm run test` still passes after query/content changes.
+
+## Limits
+
+- Supported block types: `LIST`, `TABLE`.
 - `FROM` supports folder paths.
 - `WHERE` currently supports `contains(file.name, "...")`.
-- Results are title-sorted.
-
-## Notes
-
-- This is intentionally limited and predictable.
-- Results are generated from published pages only.
-- If you need full Dataview compatibility, extend `app/content/dataview.ts`.
+- Results are title-sorted (`SORT` is accepted but not yet custom-applied).
+- Data only includes published pages.

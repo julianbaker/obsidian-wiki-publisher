@@ -1,31 +1,39 @@
 # Documentation
 
-Welcome to the project docs.
+This is the docs index for Obsidian Wiki Publisher.
 
-Documentation pages are stored as site content and use the same navigation, WikiLinks, and content model as other pages.
+## Mental model
 
-## Start Here
+Each page follows the same structure:
 
-- [[Documentation/Quickstart]]
-- [[Documentation/Content Model]]
-- [[Documentation/WikiLinks]]
-- [[Documentation/Syncing from Obsidian]]
+1. Mental model
+2. Do this
+3. Verify
+4. Limits or notes
 
-## Feature Docs
+## Read paths
 
-Each feature page includes inline examples you can run/inspect directly in the site.
+If you are new:
 
-- [[Documentation/Dataview]]
-- [[Documentation/Timeline Blocks]]
-- [[Documentation/Graph View]]
+1. [[Documentation/Quickstart]]
+2. [[Documentation/Content Model]]
+3. [[Documentation/WikiLinks]]
 
-## Ops Docs
+If you are building content features:
 
-- [[Documentation/Configuration]]
-- [[Documentation/Deployment]]
-- [[Documentation/Troubleshooting]]
+1. [[Documentation/WikiLinks]]
+2. [[Documentation/Dataview]]
+3. [[Documentation/Timeline Blocks]]
+4. [[Documentation/Graph View]]
 
-## Open Source
+If you are operating/deploying:
+
+1. [[Documentation/Configuration]]
+2. [[Documentation/Syncing from Obsidian]]
+3. [[Documentation/Deployment]]
+4. [[Documentation/Troubleshooting]]
+
+## Open source docs
 
 - [README](../../../README.md)
 - [Contributing](../../../CONTRIBUTING.md)

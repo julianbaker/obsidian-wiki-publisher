@@ -1,32 +1,42 @@
 # Syncing from Obsidian
 
-Use the sync script to copy markdown from your vault into this repo.
+Copy markdown from an Obsidian vault into this project.
 
-## Configure
+## Mental model
+
+`npm run sync` copies vault content into `app/content/posts/` with specific exclusions.
+You review the resulting git diff before publishing.
+
+## Do this
+
+1. Set the vault path:
 
 ```bash
 export VAULT_PATH="/path/to/your/obsidian/vault"
 ```
 
-## Sync
+2. Run sync:
 
 ```bash
 npm run sync
 ```
 
-This syncs into `app/content/posts/` and excludes:
+3. Review changes:
 
+```bash
+git status
+git diff
+```
+
+Excluded by default:
 - `.obsidian/`
 - `templates/`
 - `.trash/`
 - `6. Reference/`
 
-## Recommended workflow
+## Verify
 
-1. Update notes in Obsidian.
-2. Run `npm run sync`.
-3. Review changes with `git status` and `git diff`.
-4. Validate:
+Run:
 
 ```bash
 npm run lint
@@ -35,10 +45,9 @@ npm run typecheck
 npm run build
 ```
 
-5. Commit and push.
+Expected result: checks pass and imported pages resolve to expected routes.
 
-## Images and attachments
+## Notes
 
-If your vault uses attachments, sync them into `public/attachments/` and reference them with stable paths.
-
-See `sync-vault.sh` comments for the optional attachment sync command.
+If your vault uses attachments, sync them into `public/attachments/` and reference with stable paths.
+See comments in `sync-vault.sh` for optional attachment sync behavior.

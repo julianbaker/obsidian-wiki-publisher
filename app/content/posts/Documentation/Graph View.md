@@ -1,36 +1,30 @@
 # Graph View
 
-Graph View visualizes links between pages.
+Visualize page-to-page relationships from resolved WikiLinks.
 
-## Access
+## Mental model
 
-- Open from the sidebar graph button.
-- Or visit `/graph` directly.
+- Each published page is a node.
+- Each resolved WikiLink between pages is an edge.
 
-## Live demo setup
+## Do this
 
-This page links to:
-
+1. Open `/graph` (or use the sidebar graph button).
+2. Use this page's links as demo data:
 - [[Documentation/WikiLinks]]
 - [[Documentation/Dataview]]
 - [[Documentation/Timeline Blocks]]
+3. Ensure [[Documentation/WikiLinks]] links back to [[Documentation/Graph View]].
 
-The WikiLinks page links back to [[Documentation/Graph View]].
+## Verify
 
-## What to verify
+1. Hover the `Graph View` node and confirm neighboring nodes highlight.
+2. Confirm neighbors include `WikiLinks`, `Dataview`, and `Timeline Blocks`.
+3. Click a highlighted node and confirm navigation works.
+4. Open `/documentation/graph-view` and confirm `Linked References` includes `WikiLinks`.
 
-1. Open `/graph`.
-2. Hover the `Graph View` node to highlight direct neighbors.
-3. Confirm it connects to `WikiLinks`, `Dataview`, and `Timeline Blocks`.
-4. Click a highlighted node to navigate to that page.
-5. Open `/documentation/graph-view` and confirm `Linked References` includes `WikiLinks`.
+## Limits
 
-## Data source
-
-Graph data is served by `/api/graph` and built from resolved WikiLinks between published pages.
-
-## Interaction
-
-- Hover a node to highlight neighbors.
-- Click a node to navigate to its page.
-- Use zoom/fit controls for large graphs.
+- Graph includes resolved links between published pages only.
+- Data source is `/api/graph`.
+- Unresolved stub links are not graph edges.

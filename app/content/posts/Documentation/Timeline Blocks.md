@@ -1,8 +1,17 @@
 # Timeline Blocks
 
-Timeline blocks use the Obsidian Timeline plugin style and render as styled HTML on the site.
+Render Obsidian Timeline-style events as structured HTML blocks.
 
-## Syntax
+## Mental model
+
+A `timeline` block is parsed in groups of three `+` lines:
+1. date/time
+2. title
+3. description
+
+## Do this
+
+Input format:
 
 ````markdown
 ```timeline
@@ -12,15 +21,7 @@ Timeline blocks use the Obsidian Timeline plugin style and render as styled HTML
 ```
 ````
 
-Each event is 3 `+` lines:
-
-1. Date/Time
-2. Title
-3. Description
-
-## Example
-
-Source:
+Demo input:
 
 ````markdown
 ```timeline
@@ -46,10 +47,16 @@ Rendered output:
 + Major expansion period begins.
 ```
 
-## Safety
+## Verify
 
-Timeline text is HTML-escaped before rendering, while WikiLinks are converted to safe anchors.
+- Events appear in order with date/title/description grouping.
+- Blank lines between events do not break parsing.
+- WikiLinks inside timeline entries resolve correctly.
 
-## Related
+## Limits
 
-- [[Documentation/WikiLinks]]
+- Timeline text is HTML-escaped before rendering.
+- WikiLinks in title/description are converted to safe links.
+- Non-3-line event groups are ignored.
+
+See [[Documentation/WikiLinks]].

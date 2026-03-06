@@ -1,26 +1,27 @@
 # Content Model
 
+Define how files map to routes and how metadata is derived.
+
+## Mental model
+
 All published content is read from `app/content/posts/`.
+Route paths come from relative file paths, segment by segment.
 
-## Core rules
+## Do this
 
-- `index.md` maps to `/` (homepage).
-- Every other markdown file maps to a route derived from folder path + filename.
-- Folder notes are supported by naming a file the same as the folder (for example `Documentation/Documentation.md`).
+Use these rules when creating content:
 
-## Route generation
+- `index.md` maps to `/`.
+- Other markdown files map from folder path + filename.
+- Folder notes use matching names (for example `Documentation/Documentation.md`).
 
-Routes are generated from the relative path, slugified per segment.
-
-Examples:
+Route examples:
 
 - `Documentation/Quickstart.md` -> `/documentation/quickstart`
 - `Locations/Locations.md` -> `/locations` (folder note de-duplication)
 - `index.md` -> `/`
 
-## Frontmatter
-
-Supported fields:
+Optional frontmatter:
 
 ```yaml
 ---
@@ -33,16 +34,18 @@ published: true
 ---
 ```
 
-Notes:
+## Verify
+
+1. Create or edit a page under `app/content/posts/`.
+2. Run `npm run dev`.
+3. Confirm expected route path and page title.
+4. Run `npm run test` to catch route collisions and ambiguous bare links.
+
+## Notes
 
 - `title` and `summary` are auto-derived if omitted.
 - `publishedAt` defaults to file modified date.
 - `published` defaults to `true`.
-
-## Authoring guidance
-
-- Prefer stable, descriptive file names.
-- Keep one idea per page.
-- Use path-qualified WikiLinks when page names are duplicated.
+- Use path-qualified links (`[[Folder/Page]]`) when names are duplicated.
 
 See [[Documentation/WikiLinks]].
