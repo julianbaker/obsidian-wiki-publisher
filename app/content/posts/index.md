@@ -6,5 +6,13 @@ Welcome! This is an open-source Obsidian publishing starter. Replace this page a
 - Create folders and add a folder note like `1. Docs/1. Docs.md`
 - Run `npm run dev` and visit http://localhost:3000
 
-See the README for setup and deployment.
+## Documentation
 
+User documentation now lives in the wiki itself:
+
+- [[Documentation]]
+- [[Documentation/Quickstart]]
+- [[Documentation/WikiLinks]]
+- [[Documentation/Syncing from Obsidian]]
+
+See `README.md` for GitHub/repository-level information.

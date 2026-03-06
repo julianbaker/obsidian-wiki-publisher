@@ -6,7 +6,12 @@ import React from 'react'
 import { processDataviewBlocks } from 'app/content/dataview'
 import { processTimelineBlocks } from 'app/content/timeline'
 import remarkGfm from 'remark-gfm'
-import { getLorePosts } from 'app/content/utils'
+import {
+  getLorePosts,
+  getFallbackRoutePath,
+  getRouteHref,
+  resolveWikiLinkTarget,
+} from 'app/content/utils'
 import { slugify } from 'lib/utils'
 import { StubLinkHandler } from './stub-link-handler'
 
@@ -33,14 +38,14 @@ function Table({ data }) {
 }
 
 function CustomLink(props) {
-  let href = props.href
+  let href = props.href ?? ''
 
   if (href.startsWith('/')) {
     // Check if this is a stub link
-    const slug = href.substring(1) // Remove leading '/'
+    const routePath = href.replace(/^\/+|\/+$/g, '')
     const allPosts = getLorePosts()
-    const existingSlugs = new Set(allPosts.map(post => post.slug))
-    const isStub = !existingSlugs.has(slug)
+    const existingRoutePaths = new Set(allPosts.map((post) => post.routePath))
+    const isStub = routePath !== '' && !existingRoutePaths.has(routePath)
 
     if (isStub) {
       // Return anchor with stub-link class for client-side handling
@@ -80,6 +85,8 @@ function Code({ children, ...props }) {
  * - Stub detection is handled in CustomLink component
  */
 function convertWikiLinks(content: string): string {
+  const allPosts = getLorePosts()
+
   // First, handle image WikiLinks: ![[image.png]] or ![[image.png|alt text]]
   content = content.replace(/!\[\[([^\]|]+)(\|([^\]]+))?\]\]/g, (match, imagePath, _, altText) => {
     const alt = altText || imagePath.split('/').pop()?.replace(/\.[^.]+$/, '') || 'image'
@@ -90,22 +97,20 @@ function convertWikiLinks(content: string): string {
   // Then, handle regular WikiLinks: [[Page Name]] or [[Page Name|Display Text]]
   content = content.replace(/\[\[([^\]|]+)(\|([^\]]+))?\]\]/g, (match, pageName, _, displayText) => {
     // Use display text if provided, otherwise use page name
-    const linkText = displayText || pageName
+    const rawTarget = pageName.trim()
+    const linkText = (displayText || pageName).trim()
 
-    // If pageName includes a path (e.g., "1. Core/Page Name"), extract just the filename
-    const pageNameOnly = pageName.includes('/')
-      ? pageName.split('/').pop()?.trim() || pageName
-      : pageName.trim()
+    if (rawTarget.startsWith('#')) {
+      const anchor = slugify(rawTarget.substring(1))
+      return `[${linkText}](#${anchor})`
+    }
 
-    // Strip section anchors (e.g., "Page Name#Section" -> "Page Name")
-    const pageBaseName = pageNameOnly.split('#')[0].trim()
+    const resolvedPost = resolveWikiLinkTarget(rawTarget, allPosts)
+    const routePath = resolvedPost
+      ? resolvedPost.routePath
+      : getFallbackRoutePath(rawTarget)
 
-    // Convert page name to slug for routing
-    const slug = slugify(pageBaseName)
-
-    // Always return as standard markdown link
-    // Stub detection will happen in CustomLink component
-    return `[${linkText.trim()}](/${slug})`
+    return `[${linkText}](${getRouteHref(routePath)})`
   })
 
   return content

@@ -40,7 +40,13 @@ export default function GraphView() {
     const [hoveredNode, setHoveredNode] = useState<GraphNode | null>(null)
     const [highlightNodes, setHighlightNodes] = useState(new Set<string>())
     const [highlightLinks, setHighlightLinks] = useState(new Set<string>())
-    const graphRef = useRef<any>()
+    const graphRef = useRef<any>(null)
+    const themeStyles = typeof window !== 'undefined'
+        ? getComputedStyle(document.documentElement)
+        : null
+    const primaryColor = themeStyles?.getPropertyValue('--primary').trim() || '#d97706'
+    const mutedColor = themeStyles?.getPropertyValue('--muted-foreground').trim() || '#6b7280'
+    const borderColor = themeStyles?.getPropertyValue('--border').trim() || '#94a3b8'
 
     useEffect(() => {
         fetch('/api/graph')
@@ -220,10 +226,6 @@ export default function GraphView() {
                         const fontSize = 12 / globalScale
                         const nodeSize = 4
 
-                        // Get colors from CSS variables
-                        const primaryColor = getComputedStyle(document.documentElement).getPropertyValue('--primary').trim()
-                        const mutedColor = getComputedStyle(document.documentElement).getPropertyValue('--muted-foreground').trim()
-
                         // Determine if node should be dimmed
                         const isHighlighted = !hoveredNode || highlightNodes.has(node.id)
                         const opacity = isHighlighted ? 1 : 0.15
@@ -253,21 +255,7 @@ export default function GraphView() {
                         const linkId = `${source}-${target}`
 
                         const isHighlighted = !hoveredNode || highlightLinks.has(linkId)
-                        const alpha = isHighlighted ? 0.45 : 0.12
-
-                        const borderVal = getComputedStyle(document.documentElement).getPropertyValue('--border').trim()
-                        const temp = document.createElement('div')
-                        temp.style.color = borderVal
-                        document.body.appendChild(temp)
-                        const rgb = getComputedStyle(temp).color
-                        document.body.removeChild(temp)
-
-                        const m = rgb.match(/rgb\s*\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*\)/i)
-                        if (m) {
-                            const [_, r, g, b] = m
-                            return `rgba(${r}, ${g}, ${b}, ${alpha})`
-                        }
-                        return rgb
+                        return isHighlighted ? borderColor : 'rgba(148, 163, 184, 0.18)'
                     }}
                     // linkOpacity not used; alpha encoded in color string
                     linkWidth={(link: any) => {
@@ -290,5 +278,3 @@ export default function GraphView() {
         </div>
     )
 }
-
-

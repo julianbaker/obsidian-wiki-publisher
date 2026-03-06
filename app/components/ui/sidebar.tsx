@@ -107,9 +107,9 @@ const Sidebar = React.forwardRef<
 >(
     (
         {
-            side = "left",
-            variant = "sidebar",
-            collapsible = "none",
+            side: _side = "left",
+            variant: _variant = "sidebar",
+            collapsible: _collapsible = "none",
             className,
             children,
             ...props
@@ -330,4 +330,3 @@ export {
     SidebarProvider,
     useSidebar,
 }
-

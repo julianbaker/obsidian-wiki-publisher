@@ -44,7 +44,13 @@ export function GraphViewModal({ isOpen, onClose }: GraphViewModalProps) {
     const [hoveredNode, setHoveredNode] = useState<GraphNode | null>(null)
     const [highlightNodes, setHighlightNodes] = useState(new Set<string>())
     const [highlightLinks, setHighlightLinks] = useState(new Set<string>())
-    const graphRef = useRef<any>()
+    const graphRef = useRef<any>(null)
+    const themeStyles = typeof window !== 'undefined'
+        ? getComputedStyle(document.documentElement)
+        : null
+    const primaryColor = themeStyles?.getPropertyValue('--primary').trim() || '#d97706'
+    const mutedColor = themeStyles?.getPropertyValue('--muted-foreground').trim() || '#6b7280'
+    const borderColor = themeStyles?.getPropertyValue('--border').trim() || '#94a3b8'
 
     useEffect(() => {
         if (isOpen && !graphData) {
@@ -216,10 +222,6 @@ export function GraphViewModal({ isOpen, onClose }: GraphViewModalProps) {
                                 const fontSize = 12 / globalScale
                                 const nodeSize = 4
 
-                                // Get colors from CSS variables
-                                const primaryColor = getComputedStyle(document.documentElement).getPropertyValue('--primary').trim()
-                                const mutedColor = getComputedStyle(document.documentElement).getPropertyValue('--muted-foreground').trim()
-
                                 // Determine if node should be dimmed
                                 const isHighlighted = !hoveredNode || highlightNodes.has(node.id)
                                 const opacity = isHighlighted ? 1 : 0.15
@@ -249,32 +251,7 @@ export function GraphViewModal({ isOpen, onClose }: GraphViewModalProps) {
                                 const linkId = `${source}-${target}`
 
                                 const isHighlighted = !hoveredNode || highlightLinks.has(linkId)
-
-                                const borderVal = getComputedStyle(document.documentElement).getPropertyValue('--border').trim()
-                                const bgVal = getComputedStyle(document.documentElement).getPropertyValue('--background').trim()
-
-                                const temp1 = document.createElement('div')
-                                temp1.style.color = borderVal
-                                document.body.appendChild(temp1)
-                                const borderRgb = getComputedStyle(temp1).color
-                                document.body.removeChild(temp1)
-
-                                const temp2 = document.createElement('div')
-                                temp2.style.color = bgVal
-                                document.body.appendChild(temp2)
-                                const bgRgb = getComputedStyle(temp2).color
-                                document.body.removeChild(temp2)
-
-                                const parse = (s: string) => {
-                                    const m = s.match(/rgb\s*\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*\)/i)
-                                    return m ? [parseInt(m[1]), parseInt(m[2]), parseInt(m[3])] : [0, 0, 0]
-                                }
-                                const [br, bg, bb] = parse(borderRgb)
-                                const [ar, ag, ab] = parse(bgRgb)
-                                const mix = (t: number) => `rgb(${Math.round(ar * (1 - t) + br * t)}, ${Math.round(ag * (1 - t) + bg * t)}, ${Math.round(ab * (1 - t) + bb * t)})`
-
-                                // Increase contrast: dim closer to background
-                                return isHighlighted ? borderRgb : mix(0.08)
+                                return isHighlighted ? borderColor : 'rgba(148, 163, 184, 0.16)'
                             }}
                             // no linkOpacity: alpha is encoded per-link above
                             linkWidth={(link: any) => {
@@ -296,22 +273,9 @@ export function GraphViewModal({ isOpen, onClose }: GraphViewModalProps) {
                                 const alpha = isHighlighted ? 0.45 : 0.12
                                 const width = isHighlighted ? 1.0 : 0.6
 
-                                const borderVal = getComputedStyle(document.documentElement).getPropertyValue('--border').trim()
-                                const tmp = document.createElement('div')
-                                tmp.style.color = borderVal
-                                document.body.appendChild(tmp)
-                                const rgb = getComputedStyle(tmp).color
-                                document.body.removeChild(tmp)
-                                const m = rgb.match(/rgb\s*\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*\)/i)
-                                let stroke = rgb
-                                if (m) {
-                                    const [_, r, g, b] = m
-                                    stroke = `rgb(${r}, ${g}, ${b})`
-                                }
-
                                 ctx.save()
                                 ctx.lineWidth = width
-                                ctx.strokeStyle = stroke
+                                ctx.strokeStyle = borderColor
                                 ctx.globalAlpha = alpha
                                 ctx.beginPath()
                                 ctx.moveTo(s.x, s.y)
@@ -335,4 +299,3 @@ export function GraphViewModal({ isOpen, onClose }: GraphViewModalProps) {
         </div>
     )
 }
-

@@ -1,5 +1,5 @@
 import { baseUrl, siteName, siteConfig } from 'lib/site-config'
-import { getLorePosts } from 'app/content/utils'
+import { getLorePosts, getRouteHref } from 'app/content/utils'
 
 export async function GET() {
   let allBlogs = await getLorePosts()
@@ -11,11 +11,12 @@ export async function GET() {
       }
       return 1
     })
+    .filter((post) => post.routePath !== '')
     .map(
       (post) =>
         `<item>
           <title>${post.metadata.title}</title>
-          <link>${baseUrl}/${post.slug}</link>
+          <link>${baseUrl}${getRouteHref(post.routePath)}</link>
           <description>${post.metadata.summary || ''}</description>
           <pubDate>${new Date(
           post.metadata.publishedAt

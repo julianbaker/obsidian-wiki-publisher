@@ -17,7 +17,6 @@ import {
     SidebarMenuButton,
     SidebarMenuSub,
     SidebarMenuSubItem,
-    SidebarMenuSubButton,
 } from './ui/sidebar'
 import {
     Sheet,
@@ -28,6 +27,7 @@ import { Button } from './ui/button'
 
 interface Post {
     slug: string
+    routePath: string
     metadata: {
         title: string
     }
@@ -41,7 +41,11 @@ interface FolderNode {
 
 interface WikiSidebarProps {
     structure: Record<string, FolderNode>
-    currentSlug?: string
+    currentPath?: string
+}
+
+function toHref(routePath: string): string {
+    return routePath ? `/${routePath}` : '/'
 }
 
 function FolderItem({
@@ -49,9 +53,9 @@ function FolderItem({
     posts,
     subfolders,
     level = 0,
-    currentSlug,
+    currentPath,
     onNavigate
-}: FolderNode & { level?: number; currentSlug?: string; onNavigate?: () => void }) {
+}: FolderNode & { level?: number; currentPath?: string; onNavigate?: () => void }) {
     const hasSubfolders = Object.keys(subfolders).length > 0
 
     // Find the folder note (file named same as folder, e.g., "1. Core.md" in "1. Core" folder)
@@ -61,28 +65,28 @@ function FolderItem({
     const childPosts = posts.filter(post => post.slug !== folderBaseName)
 
     // Recursively check if current slug is within this folder tree
-    const containsCurrentSlug = (folderData: FolderNode, slug?: string): boolean => {
-        if (!slug) return false
+    const containsCurrentPath = (folderData: FolderNode, currentRoutePath?: string): boolean => {
+        if (currentRoutePath === undefined) return false
 
         const baseName = slugify(folderData.name)
         const note = folderData.posts.find(post => post.slug === baseName)
 
         // Check if it's the folder note
-        if (note?.slug === slug) return true
+        if (note?.routePath === currentRoutePath) return true
 
         // Check if it's any other post in this folder
         const children = folderData.posts.filter(post => post.slug !== baseName)
-        if (children.some(post => post.slug === slug)) return true
+        if (children.some(post => post.routePath === currentRoutePath)) return true
 
         // Recursively check subfolders
         for (const subfolder of Object.values(folderData.subfolders)) {
-            if (containsCurrentSlug(subfolder, slug)) return true
+            if (containsCurrentPath(subfolder, currentRoutePath)) return true
         }
 
         return false
     }
 
-    const shouldBeOpen = containsCurrentSlug({ name, posts, subfolders }, currentSlug)
+    const shouldBeOpen = containsCurrentPath({ name, posts, subfolders }, currentPath)
     const [isOpen, setIsOpen] = useState(shouldBeOpen)
 
     // Update isOpen when navigating to/from pages in this folder
@@ -96,12 +100,12 @@ function FolderItem({
         <SidebarMenuItem>
             {folderNote ? (
                 <Link
-                    href={`/${folderNote.slug}`}
+                    href={toHref(folderNote.routePath)}
                     onClick={onNavigate}
                     className={cn(
                         "flex items-center gap-2 h-9 px-2 rounded-md hover:bg-accent transition-colors group",
                         level === 0 && "font-semibold",
-                        currentSlug === folderNote.slug && "bg-accent font-medium"
+                        currentPath === folderNote.routePath && "bg-accent font-medium"
                     )}
                 >
                     <button
@@ -139,13 +143,13 @@ function FolderItem({
             {isOpen && (childPosts.length > 0 || hasSubfolders) && (
                 <SidebarMenuSub>
                     {childPosts.map((post) => (
-                        <SidebarMenuSubItem key={post.slug}>
+                        <SidebarMenuSubItem key={post.routePath}>
                             <Link
-                                href={`/${post.slug}`}
+                                href={toHref(post.routePath)}
                                 onClick={onNavigate}
                                 className={cn(
                                     "flex h-7 items-center gap-2 overflow-hidden rounded-md px-2 text-sm outline-none ring-offset-background hover:bg-accent hover:text-accent-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 transition-colors",
-                                    currentSlug === post.slug && "bg-accent font-medium text-accent-foreground"
+                                    currentPath === post.routePath && "bg-accent font-medium text-accent-foreground"
                                 )}
                             >
                                 <FileText className="h-4 w-4 shrink-0 text-muted-foreground" />
@@ -159,7 +163,7 @@ function FolderItem({
                             key={folderName}
                             {...folder}
                             level={level + 1}
-                            currentSlug={currentSlug}
+                            currentPath={currentPath}
                             onNavigate={onNavigate}
                         />
                     ))}
@@ -169,7 +173,7 @@ function FolderItem({
     )
 }
 
-function SidebarNav({ structure, currentSlug, onNavigate, isMobile, onGraphOpen }: WikiSidebarProps & { onNavigate?: () => void; isMobile?: boolean; onGraphOpen?: () => void }) {
+function SidebarNav({ structure, currentPath, onNavigate, isMobile, onGraphOpen }: WikiSidebarProps & { onNavigate?: () => void; isMobile?: boolean; onGraphOpen?: () => void }) {
     const handleGraphOpen = () => {
         onGraphOpen?.()
         onNavigate?.() // Close mobile sidebar when opening graph
@@ -218,14 +222,14 @@ function SidebarNav({ structure, currentSlug, onNavigate, isMobile, onGraphOpen 
                     <SidebarGroupContent>
                         <SidebarMenu>
                             {/* Render root-level pages as top-level items */}
-                            {structure['Root']?.posts?.filter((post) => post && post.slug !== 'index').map((post) => (
-                                <SidebarMenuItem key={post.slug}>
+                            {structure['Root']?.posts?.filter((post) => post && post.routePath !== '').map((post) => (
+                                <SidebarMenuItem key={post.routePath}>
                                     <Link
-                                        href={`/${post.slug}`}
+                                        href={toHref(post.routePath)}
                                         onClick={onNavigate}
                                         className={cn(
                                             'flex h-9 items-center gap-2 overflow-hidden rounded-md px-2 text-sm outline-none ring-offset-background hover:bg-accent hover:text-accent-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 transition-colors',
-                                            currentSlug === post.slug && 'bg-accent font-medium text-accent-foreground'
+                                            currentPath === post.routePath && 'bg-accent font-medium text-accent-foreground'
                                         )}
                                     >
                                         <FileText className="h-4 w-4 shrink-0 text-muted-foreground" />
@@ -241,7 +245,7 @@ function SidebarNav({ structure, currentSlug, onNavigate, isMobile, onGraphOpen 
                                     <FolderItem
                                         key={folderName}
                                         {...folder}
-                                        currentSlug={currentSlug}
+                                        currentPath={currentPath}
                                         onNavigate={onNavigate}
                                     />
                                 ))}
@@ -253,7 +257,7 @@ function SidebarNav({ structure, currentSlug, onNavigate, isMobile, onGraphOpen 
     )
 }
 
-export function WikiSidebar({ structure, currentSlug }: WikiSidebarProps) {
+export function WikiSidebar({ structure, currentPath }: WikiSidebarProps) {
     const [isMobileOpen, setIsMobileOpen] = useState(false)
     const [isGraphOpen, setIsGraphOpen] = useState(false)
 
@@ -263,7 +267,7 @@ export function WikiSidebar({ structure, currentSlug }: WikiSidebarProps) {
             <Sidebar className="hidden md:flex">
                 <SidebarNav
                     structure={structure}
-                    currentSlug={currentSlug}
+                    currentPath={currentPath}
                     isMobile={false}
                     onGraphOpen={() => setIsGraphOpen(true)}
                 />
@@ -286,7 +290,7 @@ export function WikiSidebar({ structure, currentSlug }: WikiSidebarProps) {
                         <div className="flex-1 overflow-y-auto">
                             <SidebarNav
                                 structure={structure}
-                                currentSlug={currentSlug}
+                                currentPath={currentPath}
                                 onNavigate={() => setIsMobileOpen(false)}
                                 onGraphOpen={() => setIsGraphOpen(true)}
                                 isMobile={true}
@@ -301,4 +305,3 @@ export function WikiSidebar({ structure, currentSlug }: WikiSidebarProps) {
         </>
     )
 }
-

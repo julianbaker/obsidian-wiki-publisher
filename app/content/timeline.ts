@@ -3,7 +3,12 @@
  * Supports the standard Obsidian Timeline plugin syntax
  */
 
-import { getLorePosts } from './utils'
+import {
+    getFallbackRoutePath,
+    getLorePosts,
+    getRouteHref,
+    resolveWikiLinkTarget
+} from './utils'
 import { slugify } from 'lib/utils'
 
 export interface TimelineEvent {
@@ -45,30 +50,47 @@ export function parseTimelineBlock(content: string): TimelineEvent[] {
 /**
  * Convert WikiLinks in text to HTML links
  */
-function convertWikiLinksToHTML(text: string): string {
-    const allPosts = getLorePosts()
-    const existingSlugs = new Set(allPosts.map(post => post.slug))
+function escapeHtml(text: string): string {
+    return text
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;')
+}
 
-    // Convert [[#anchor]] or [[#anchor|Display Text]] to anchor links
-    text = text.replace(/\[\[#([^\]|]+)(\|([^\]]+))?\]\]/g, (match, anchor, _, displayText) => {
-        const linkText = displayText || anchor
-        const anchorSlug = slugify(anchor.trim())
-        return `<a href="#${anchorSlug}">${linkText.trim()}</a>`
-    })
+function convertWikiLinksToHTML(text: string, allPosts = getLorePosts()): string {
+    const wikiLinkRegex = /\[\[([^\]|]+)(\|([^\]]+))?\]\]/g
+    let output = ''
+    let lastIndex = 0
+    let match: RegExpExecArray | null
 
-    // Convert [[Page Name]] or [[Page Name|Display Text]] to HTML links
-    return text.replace(/\[\[([^\]|]+)(\|([^\]]+))?\]\]/g, (match, pageName, _, displayText) => {
-        const linkText = displayText || pageName
-        const pageNameOnly = pageName.includes('/')
-            ? pageName.split('/').pop()?.trim() || pageName
-            : pageName.trim()
+    while ((match = wikiLinkRegex.exec(text)) !== null) {
+        output += escapeHtml(text.slice(lastIndex, match.index))
 
-        const slug = slugify(pageNameOnly)
-        const isStub = !existingSlugs.has(slug)
-        const className = isStub ? ' class="stub-link"' : ''
+        const rawTarget = match[1].trim()
+        const linkText = escapeHtml((match[3] || match[1]).trim())
 
-        return `<a href="/${slug}"${className}>${linkText.trim()}</a>`
-    })
+        if (rawTarget.startsWith('#')) {
+            const anchorSlug = slugify(rawTarget.substring(1))
+            output += `<a href="#${anchorSlug}">${linkText}</a>`
+            lastIndex = wikiLinkRegex.lastIndex
+            continue
+        }
+
+        const resolved = resolveWikiLinkTarget(rawTarget, allPosts)
+        const routePath = resolved
+            ? resolved.routePath
+            : getFallbackRoutePath(rawTarget)
+        const href = getRouteHref(routePath)
+        const isStub = routePath !== '' && !resolved
+
+        output += `<a href="${href}"${isStub ? ' class="stub-link"' : ''}>${linkText}</a>`
+        lastIndex = wikiLinkRegex.lastIndex
+    }
+
+    output += escapeHtml(text.slice(lastIndex))
+    return output
 }
 
 /**
@@ -83,15 +105,18 @@ export function renderTimelineHTML(events: TimelineEvent[]): string {
     let html = '<div class="timeline-container">\n'
     html += '  <div class="timeline-line"></div>\n'
 
+    const allPosts = getLorePosts()
+
     events.forEach((event) => {
         // Convert WikiLinks in title and description (including [[#anchor]] links)
-        const titleHTML = convertWikiLinksToHTML(event.title)
-        const descriptionHTML = convertWikiLinksToHTML(event.description)
+        const titleHTML = convertWikiLinksToHTML(event.title, allPosts)
+        const descriptionHTML = convertWikiLinksToHTML(event.description, allPosts)
+        const safeDate = escapeHtml(event.date)
 
         html += `  <div class="timeline-event">\n`
         html += `    <div class="timeline-marker"></div>\n`
         html += `    <div class="timeline-content">\n`
-        html += `      <div class="timeline-date">${event.date}</div>\n`
+        html += `      <div class="timeline-date">${safeDate}</div>\n`
         html += `      <div class="timeline-title">${titleHTML}</div>\n`
         html += `      <div class="timeline-description">${descriptionHTML}</div>\n`
         html += `    </div>\n`
@@ -120,4 +145,3 @@ export function processTimelineBlocks(content: string): string {
         }
     })
 }
-

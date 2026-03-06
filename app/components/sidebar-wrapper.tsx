@@ -7,6 +7,7 @@ interface FolderNode {
     name: string
     posts: Array<{
         slug: string
+        routePath: string
         metadata: {
             title: string
         }
@@ -21,11 +22,10 @@ interface SidebarWrapperProps {
 export function SidebarWrapper({ structure }: SidebarWrapperProps) {
     const pathname = usePathname()
 
-    // Extract slug from pathname (e.g., /some-slug -> some-slug)
-    const currentSlug = pathname.startsWith('/')
+    // Extract current route path without leading slash (e.g., /docs/getting-started -> docs/getting-started)
+    const currentPath = pathname.startsWith('/')
         ? pathname.slice(1)
         : undefined
 
-    return <WikiSidebar structure={structure} currentSlug={currentSlug} />
+    return <WikiSidebar structure={structure} currentPath={currentPath} />
 }
-

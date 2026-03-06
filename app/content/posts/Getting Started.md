@@ -18,6 +18,7 @@ npm run sync
 
 - Create pages in `app/content/posts/`
 - Link with WikiLinks like `[[Features]]`
+- Browse docs in [[Documentation]]
 - Use Dataview blocks, e.g.:
 
 ```dataview

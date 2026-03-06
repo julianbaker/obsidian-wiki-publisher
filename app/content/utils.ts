@@ -2,13 +2,34 @@ import fs from 'fs'
 import path from 'path'
 import { slugify } from 'lib/utils'
 
-type Metadata = {
+export type Metadata = {
   title: string
   publishedAt: string
   summary: string
   image?: string
   category?: string
   published?: boolean
+}
+
+export type LorePost = {
+  metadata: Metadata
+  slug: string
+  routePath: string
+  pathSegments: string[]
+  content: string
+  folderPath: string
+  relativePath: string
+}
+
+type FolderStructureNode = {
+  name: string
+  posts: LorePost[]
+  subfolders: Record<string, FolderStructureNode>
+}
+
+type WikiLinkIndex = {
+  byRoutePath: Map<string, LorePost>
+  bySlug: Map<string, LorePost[]>
 }
 
 /**
@@ -125,13 +146,6 @@ function getMarkdownFilesRecursive(dir: string, baseDir: string = dir): string[]
   return results
 }
 
-function getMarkdownFiles(dir) {
-  return fs.readdirSync(dir).filter((file) => {
-    const ext = path.extname(file)
-    return ext === '.mdx' || ext === '.md'
-  })
-}
-
 function readMarkdownFile(filePath) {
   let rawContent = fs.readFileSync(filePath, 'utf-8')
   return parseFrontmatter(rawContent, filePath)
@@ -146,15 +160,98 @@ function extractFolderCategory(relativePath: string): string | undefined {
   return dirPath
 }
 
-function getMarkdownData(dir) {
+function normalizeRouteSegments(segments: string[]) {
+  const normalized = segments
+    .map((segment) => slugify(segment.trim()))
+    .filter(Boolean)
+
+  if (normalized.length === 1 && normalized[0] === 'index') {
+    return [] as string[]
+  }
+
+  if (
+    normalized.length > 1 &&
+    normalized[normalized.length - 1] === normalized[normalized.length - 2]
+  ) {
+    normalized.pop()
+  }
+
+  return normalized
+}
+
+function toRoutePathFromRelativePath(relativePath: string) {
+  const withoutExt = relativePath.slice(0, -path.extname(relativePath).length)
+  const rawSegments = withoutExt.split(path.sep)
+  const pathSegments = normalizeRouteSegments(rawSegments)
+  return {
+    pathSegments,
+    routePath: pathSegments.join('/'),
+  }
+}
+
+function buildWikiLinkIndex(posts: LorePost[]): WikiLinkIndex {
+  const byRoutePath = new Map<string, LorePost>()
+  const bySlug = new Map<string, LorePost[]>()
+
+  posts.forEach((post) => {
+    byRoutePath.set(post.routePath, post)
+    const existing = bySlug.get(post.slug) ?? []
+    existing.push(post)
+    bySlug.set(post.slug, existing)
+  })
+
+  return { byRoutePath, bySlug }
+}
+
+function getCanonicalWikiLinkTarget(rawTarget: string) {
+  const withoutAnchor = rawTarget.split('#')[0].trim()
+  if (!withoutAnchor || withoutAnchor.startsWith('#')) return ''
+
+  const normalized = normalizeRouteSegments(withoutAnchor.split('/'))
+  return normalized.join('/')
+}
+
+function resolveWikiLinkTargetWithIndex(
+  rawTarget: string,
+  index: WikiLinkIndex
+): LorePost | null {
+  const canonicalTarget = getCanonicalWikiLinkTarget(rawTarget)
+  if (!canonicalTarget && slugify(rawTarget.trim()) !== 'index') {
+    return null
+  }
+
+  const directMatch = index.byRoutePath.get(canonicalTarget)
+  if (directMatch) return directMatch
+
+  // For bare wikilinks (e.g. [[My Page]]) only resolve unambiguously.
+  if (!rawTarget.includes('/')) {
+    const slugMatches = index.bySlug.get(slugify(rawTarget)) ?? []
+    if (slugMatches.length === 1) {
+      return slugMatches[0]
+    }
+  }
+
+  return null
+}
+
+function getMarkdownData(dir: string): LorePost[] {
   let markdownFiles = getMarkdownFilesRecursive(dir)
+  const usedRoutePaths = new Map<string, string>()
+
   return markdownFiles.map((relativePath) => {
     const fullPath = path.join(dir, relativePath)
     let { metadata, content } = readMarkdownFile(fullPath)
-    let slug = path.basename(relativePath, path.extname(relativePath))
+    const fileName = path.basename(relativePath, path.extname(relativePath))
+    const slug = slugify(fileName)
+    const { pathSegments, routePath } = toRoutePathFromRelativePath(relativePath)
 
-    // Convert "Point of Divergence" to "point-of-divergence" using proper slugify
-    slug = slugify(slug)
+    const existingRouteOwner = usedRoutePaths.get(routePath)
+    if (existingRouteOwner) {
+      throw new Error(
+        `Duplicate route path "${routePath}" generated for "${relativePath}" and "${existingRouteOwner}".`
+      )
+    }
+    usedRoutePaths.set(routePath, relativePath)
 
     // Extract folder category if not already set
     if (!metadata.category) {
@@ -164,8 +261,11 @@ function getMarkdownData(dir) {
     return {
       metadata,
       slug,
+      routePath,
+      pathSegments,
       content,
       folderPath: path.dirname(relativePath), // Keep original folder structure
+      relativePath,
     }
   })
 }
@@ -249,7 +349,7 @@ export function getAllFolders() {
  */
 export function getPostsByFolder() {
   const posts = getLorePosts()
-  const grouped: Record<string, any[]> = {}
+  const grouped: Record<string, LorePost[]> = {}
 
   posts.forEach((post) => {
     const folder = post.folderPath || 'Root'
@@ -267,7 +367,7 @@ export function getPostsByFolder() {
  */
 export function getFolderStructure() {
   const posts = getLorePosts()
-  const structure: any = {}
+  const structure: Record<string, FolderStructureNode> = {}
 
   posts.forEach((post) => {
     const folderPath = post.folderPath || 'Root'
@@ -298,26 +398,20 @@ export function getFolderStructure() {
 /**
  * Extract all WikiLinks from content
  */
-function extractWikiLinks(content: string): string[] {
+function extractWikiLinks(content: string, posts: LorePost[]): string[] {
   const wikiLinkRegex = /\[\[([^\]|]+)(\|[^\]]+)?\]\]/g
   const links: string[] = []
+  const index = buildWikiLinkIndex(posts)
   let match
 
   while ((match = wikiLinkRegex.exec(content)) !== null) {
-    // Get the page name (before the | if it exists)
-    let pageName = match[1].trim()
+    const pageName = match[1].trim()
+    if (!pageName || pageName.startsWith('#')) continue
 
-    // If pageName includes a path, extract just the filename
-    if (pageName.includes('/')) {
-      pageName = pageName.split('/').pop()?.trim() || pageName
+    const resolved = resolveWikiLinkTargetWithIndex(pageName, index)
+    if (resolved) {
+      links.push(resolved.routePath)
     }
-
-    // Strip section anchors (e.g., "Page Name#Section" -> "Page Name")
-    pageName = pageName.split('#')[0].trim()
-
-    // Convert to slug format to match how pages are referenced
-    const slug = slugify(pageName)
-    links.push(slug)
   }
 
   return links
@@ -326,15 +420,19 @@ function extractWikiLinks(content: string): string[] {
 /**
  * Get all pages that link to a specific page (backlinks)
  */
-export function getBacklinks(targetSlug: string) {
+export function getBacklinks(targetRoutePath: string) {
   const allPosts = getLorePosts()
-  const backlinks: any[] = []
+  const backlinks: Array<{
+    routePath: string
+    title: string
+    folderPath: string
+  }> = []
 
   allPosts.forEach((post) => {
-    const links = extractWikiLinks(post.content)
-    if (links.includes(targetSlug)) {
+    const links = extractWikiLinks(post.content, allPosts)
+    if (links.includes(targetRoutePath)) {
       backlinks.push({
-        slug: post.slug,
+        routePath: post.routePath,
         title: post.metadata.title,
         folderPath: post.folderPath,
       })
@@ -348,27 +446,41 @@ export function getBacklinks(targetSlug: string) {
  * Build a complete link graph for visualization
  */
 export function buildLinkGraph() {
-  const allPosts = getLorePosts()
+  const allPosts = getLorePosts().filter((post) => post.routePath !== '')
   const nodes = allPosts.map((post) => ({
-    id: post.slug,
+    id: post.routePath,
     title: post.metadata.title,
     folder: post.folderPath,
   }))
 
   const links: Array<{ source: string; target: string }> = []
+  const routeSet = new Set(allPosts.map((post) => post.routePath))
 
   allPosts.forEach((post) => {
-    const wikiLinks = extractWikiLinks(post.content)
-    wikiLinks.forEach((targetSlug) => {
+    const wikiLinks = extractWikiLinks(post.content, allPosts)
+    wikiLinks.forEach((targetRoutePath) => {
       // Only add link if target exists
-      if (allPosts.find((p) => p.slug === targetSlug)) {
+      if (routeSet.has(targetRoutePath)) {
         links.push({
-          source: post.slug,
-          target: targetSlug,
+          source: post.routePath,
+          target: targetRoutePath,
         })
       }
     })
   })
 
   return { nodes, links }
+}
+
+export function getRouteHref(routePath: string) {
+  return routePath ? `/${routePath}` : '/'
+}
+
+export function resolveWikiLinkTarget(rawTarget: string, posts = getLorePosts()) {
+  const index = buildWikiLinkIndex(posts)
+  return resolveWikiLinkTargetWithIndex(rawTarget, index)
+}
+
+export function getFallbackRoutePath(rawTarget: string) {
+  return getCanonicalWikiLinkTarget(rawTarget)
 }

@@ -1,20 +1,27 @@
 import { notFound } from 'next/navigation'
 import { CustomMDX } from 'app/components/mdx'
-import { formatDate, getLorePosts, getBacklinks } from 'app/content/utils'
+import { getLorePosts, getBacklinks, getRouteHref } from 'app/content/utils'
 import { baseUrl, siteName } from 'lib/site-config'
 import Link from 'next/link'
 
 export async function generateStaticParams() {
   let posts = getLorePosts()
 
-  return posts.map((post) => ({
-    slug: post.slug,
-  }))
+  return posts
+    .filter((post) => post.pathSegments.length > 0)
+    .map((post) => ({
+      slug: post.pathSegments,
+    }))
 }
 
-export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string[] }>
+}) {
   const { slug } = await params
-  let post = getLorePosts().find((post) => post.slug === slug)
+  const routePath = slug.join('/')
+  let post = getLorePosts().find((item) => item.routePath === routePath)
   if (!post) {
     return
   }
@@ -37,7 +44,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
       description,
       type: 'article',
       publishedTime,
-      url: `${baseUrl}/${post.slug}`,
+      url: `${baseUrl}${getRouteHref(post.routePath)}`,
       images: [
         {
           url: ogImage,
@@ -53,15 +60,20 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   }
 }
 
-export default async function Blog({ params }: { params: Promise<{ slug: string }> }) {
+export default async function Blog({
+  params,
+}: {
+  params: Promise<{ slug: string[] }>
+}) {
   const { slug } = await params
-  let post = getLorePosts().find((post) => post.slug === slug)
+  const routePath = slug.join('/')
+  let post = getLorePosts().find((item) => item.routePath === routePath)
 
   if (!post) {
     notFound()
   }
 
-  const backlinks = getBacklinks(post.slug)
+  const backlinks = getBacklinks(post.routePath)
 
   return (
     <section>
@@ -79,7 +91,7 @@ export default async function Blog({ params }: { params: Promise<{ slug: string 
             image: post.metadata.image
               ? `${baseUrl}${post.metadata.image}`
               : `/og?title=${encodeURIComponent(post.metadata.title)}`,
-            url: `${baseUrl}/${post.slug}`,
+            url: `${baseUrl}${getRouteHref(post.routePath)}`,
             author: {
               '@type': 'Person',
               name: siteName,
@@ -99,8 +111,8 @@ export default async function Blog({ params }: { params: Promise<{ slug: string 
           <div className="space-y-2">
             {backlinks.map((backlink) => (
               <Link
-                key={backlink.slug}
-                href={`/${backlink.slug}`}
+                key={backlink.routePath}
+                href={getRouteHref(backlink.routePath)}
                 className="block p-3 rounded-lg hover:bg-muted transition-colors"
               >
                 <p className="text-foreground font-medium">

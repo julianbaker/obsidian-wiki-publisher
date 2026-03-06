@@ -1,11 +1,10 @@
-import { notFound } from 'next/navigation'
 import { CustomMDX } from 'app/components/mdx'
 import { getLorePosts } from 'app/content/utils'
 import { siteName, siteConfig } from 'lib/site-config'
 
 export default function Page() {
   // Find the index page
-  const welcomePost = getLorePosts().find((post) => post.slug === 'index')
+  const welcomePost = getLorePosts().find((post) => post.routePath === '')
 
   if (!welcomePost) {
     return (

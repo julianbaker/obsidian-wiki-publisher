@@ -112,7 +112,9 @@ export function executeDataviewQuery(query: string): string {
     if (posts.length === 0) {
       return '_No pages found._'
     }
-    return posts.map(post => `- [[${post.metadata.title}]]`).join('\n')
+    return posts
+      .map(post => `- [[${post.routePath || 'index'}|${post.metadata.title}]]`)
+      .join('\n')
   }
 
   if (parsed.type === 'TABLE') {
@@ -127,7 +129,7 @@ export function executeDataviewQuery(query: string): string {
     table += '| ' + headers.map(() => '---').join(' | ') + ' |\n'
 
     posts.forEach(post => {
-      const row = [`[[${post.metadata.title}]]`]
+      const row = [`[[${post.routePath || 'index'}|${post.metadata.title}]]`]
 
       fields.forEach(field => {
         if (field === 'file.name' || field === 'file.link') return
@@ -168,4 +170,3 @@ export function processDataviewBlocks(content: string): string {
     }
   })
 }
-
