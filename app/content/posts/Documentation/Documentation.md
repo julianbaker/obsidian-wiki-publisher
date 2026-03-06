@@ -13,6 +13,8 @@ Documentation pages are stored as site content and use the same navigation, Wiki
 
 ## Feature Docs
 
+Each feature page includes inline examples you can run/inspect directly in the site.
+
 - [[Documentation/Dataview]]
 - [[Documentation/Timeline Blocks]]
 - [[Documentation/Graph View]]

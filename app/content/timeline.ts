@@ -25,7 +25,12 @@ export interface TimelineEvent {
  * + Description
  */
 export function parseTimelineBlock(content: string): TimelineEvent[] {
-    const lines = content.trim().split('\n').map(line => line.trim())
+    // Ignore blank lines so authoring style can include spacing between events.
+    const lines = content
+        .trim()
+        .split('\n')
+        .map(line => line.trim())
+        .filter(Boolean)
     const events: TimelineEvent[] = []
 
     // Process lines in groups of 3

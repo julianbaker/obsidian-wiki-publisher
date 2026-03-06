@@ -7,17 +7,43 @@ The project supports lightweight Dataview-style blocks at render time.
 - `LIST`
 - `TABLE`
 
-## Examples
+## Live example: LIST query
+
+Query:
+
+````markdown
+```dataview
+LIST
+FROM "Documentation"
+```
+````
+
+Rendered output:
 
 ```dataview
 LIST
 FROM "Documentation"
 ```
 
+## Live example: TABLE query with WHERE
+
+Query:
+
+````markdown
 ```dataview
 TABLE file.folder, summary
 FROM "Documentation"
-WHERE contains(file.name, "Guide")
+WHERE contains(file.name, "Wiki")
+SORT title
+```
+````
+
+Rendered output:
+
+```dataview
+TABLE file.folder, summary
+FROM "Documentation"
+WHERE contains(file.name, "Wiki")
 SORT title
 ```
 

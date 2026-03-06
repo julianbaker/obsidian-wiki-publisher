@@ -20,6 +20,8 @@ Each event is 3 `+` lines:
 
 ## Example
 
+Source:
+
 ````markdown
 ```timeline
 + 1492
@@ -31,6 +33,18 @@ Each event is 3 `+` lines:
 + Major expansion period begins.
 ```
 ````
+
+Rendered output:
+
+```timeline
++ 1492
++ First Contact
++ Initial contact is established.
+
++ 1500
++ Expansion
++ Major expansion period begins.
+```
 
 ## Safety
 
