@@ -1,6 +1,6 @@
 # Changelog
 
-All notable changes to the Pachakuti Earth Project wiki.
+All notable changes to Obsidian Wiki Publisher.
 
 ## [1.0.0] - 2024-10-17
 
@@ -32,7 +32,7 @@ All notable changes to the Pachakuti Earth Project wiki.
 - 🔄 **Removed Blog Categories** - Replaced with folder-based organization
 - 🔄 **Removed Navbar** - Replaced with wiki sidebar
 - 🔄 **Updated Layout** - Sidebar + main content area
-- 🔄 **Renamed Project** - From "Portfolio Blog" to "Pachakuti Earth Project"
+- 🔄 **Renamed Project** - From "Portfolio Blog" starter to "Obsidian Wiki Publisher"
 - 🔄 **Updated Styling** - Wiki-like aesthetic with improved typography
 - 🔄 **Homepage** - Now displays `Welcome.md` from vault
 
@@ -78,4 +78,3 @@ Original blog starter template from Vercel:
 - 📖 Documentation
 - ⚠️ Deprecated
 - 🗑️ Removed
-

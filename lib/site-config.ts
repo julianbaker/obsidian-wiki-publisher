@@ -42,11 +42,11 @@ if (process.env.NODE_ENV === 'production' && !envBaseUrl && !vercelBaseUrl) {
 }
 
 export const siteConfig: SiteConfig = {
-    siteName: 'Bob Loblore Lore Blog',
-    tagline: 'Obsidian-powered wiki publishing',
+    siteName: 'Obsidian Wiki Publisher',
+    tagline: 'Open-source Obsidian wiki publishing',
     description: 'A simple, open-source Obsidian publishing tool with WikiLinks, backlinks, and Dataview-like queries.',
     baseUrl: resolvedBaseUrl,
-    author: 'Bob Loblore',
+    author: 'Obsidian Wiki Publisher Contributors',
 }
 
 export const baseUrl = siteConfig.baseUrl

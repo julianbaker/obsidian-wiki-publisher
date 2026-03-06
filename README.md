@@ -2,6 +2,11 @@
 
 Turn an Obsidian vault into a published, navigable website with WikiLinks, backlinks, Dataview-style queries, timelines, and graph view.
 
+## Origin
+
+This started as a worldbuilding project called Bob Loblore's Lore Blog.
+It grew past that, but the idea stayed simple: Obsidian Publish costs money, so I built my own.
+
 ## What this is
 
 - Next.js App Router site
