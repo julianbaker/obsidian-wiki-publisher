@@ -51,7 +51,7 @@ NEXT_PUBLIC_SITE_URL="https://your-domain.com"
 
 ## Documentation
 
-Canonical user documentation lives inside the wiki content so docs are browsable on the site itself.
+User documentation is maintained as site content.
 
 - Docs source folder: `app/content/posts/Documentation/`
 - Docs entry page (local route): `/documentation`

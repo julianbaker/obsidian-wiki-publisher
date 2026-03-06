@@ -1,8 +1,6 @@
-# Usage Guide (Moved)
+# Usage Guide
 
-This file has been deprecated as a canonical source.
-
-The current usage/configuration documentation lives in:
+Usage and configuration documentation:
 
 - `app/content/posts/Documentation/Content Model.md`
 - `app/content/posts/Documentation/Configuration.md`

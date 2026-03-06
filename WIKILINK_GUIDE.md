@@ -1,8 +1,6 @@
-# WikiLink Guide (Moved)
+# WikiLink Guide
 
-Canonical WikiLink docs now live in site content:
+WikiLink documentation:
 
 - Source: `app/content/posts/Documentation/WikiLinks.md`
 - Local route: `/documentation/wikilinks`
-
-This keeps runtime behavior and documentation in one place.

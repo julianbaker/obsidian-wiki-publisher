@@ -1,6 +1,6 @@
-# Timeline Guide (Moved)
+# Timeline Guide
 
-Canonical timeline documentation now lives in site content:
+Timeline documentation:
 
 - Source: `app/content/posts/Documentation/Timeline Blocks.md`
 - Local route: `/documentation/timeline-blocks`

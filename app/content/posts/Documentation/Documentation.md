@@ -2,7 +2,7 @@
 
 Welcome to the project docs.
 
-This documentation is designed to live in the wiki itself so you can use the same navigation, WikiLinks, and search patterns as your content.
+Documentation pages are stored as site content and use the same navigation, WikiLinks, and content model as other pages.
 
 ## Start Here
 

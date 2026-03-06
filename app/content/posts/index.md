@@ -1,8 +1,8 @@
 # Bob Loblore Lore Blog
 
-Welcome! This starter keeps the original playful mascot name from the project's worldbuilding roots. Keep it, rename it, or replace this page entirely.
+Welcome to an open-source Obsidian wiki publishing starter.
 
-This is an open-source Obsidian publishing starter. Add your own markdown in `app/content/posts/`.
+This homepage and title are sample content. Replace them with your own markdown in `app/content/posts/`.
 
 - Use WikiLinks like `[[Getting Started]]` and `[[Features]]`
 - Create folders and add a folder note like `1. Docs/1. Docs.md`
@@ -10,11 +10,11 @@ This is an open-source Obsidian publishing starter. Add your own markdown in `ap
 
 ## Documentation
 
-User documentation now lives in the wiki itself:
+Documentation:
 
 - [[Documentation]]
 - [[Documentation/Quickstart]]
 - [[Documentation/WikiLinks]]
 - [[Documentation/Syncing from Obsidian]]
 
-See `README.md` for GitHub/repository-level information.
+Repository setup, contribution, and policy docs are in `README.md`.

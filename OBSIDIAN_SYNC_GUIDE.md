@@ -1,6 +1,6 @@
-# Obsidian Sync Guide (Moved)
+# Obsidian Sync Guide
 
-Canonical sync documentation now lives in site content:
+Sync documentation:
 
 - Source: `app/content/posts/Documentation/Syncing from Obsidian.md`
 - Local route: `/documentation/syncing-from-obsidian`

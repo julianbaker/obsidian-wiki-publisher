@@ -1,6 +1,6 @@
-# Quick Start (Moved)
+# Quick Start
 
-Canonical quickstart documentation now lives in the site content:
+Quickstart documentation:
 
 - Source: `app/content/posts/Documentation/Quickstart.md`
 - Local route: `/documentation/quickstart`
